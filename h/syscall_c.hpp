@@ -2,8 +2,8 @@
 #define SYSCALL_C_HPP
 
 #include "../lib/hw.h"
-
-typedef void* thread_t;
+#include "tcb.hpp"
+typedef TCB* thread_t;
 typedef void* sem_t;
 
 enum SYSCALL_CODES {

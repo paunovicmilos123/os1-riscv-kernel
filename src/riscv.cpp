@@ -2,6 +2,7 @@
 #include "../lib/console.h"
 #include "../h/kernelPrinting.hpp"
 #include "../h/syscall_c.hpp"
+#include "../lib/mem.h"
 
 uint64 Riscv::ecall(uint64 code, uint64 arg0, uint64 arg1, uint64 arg2, uint64 arg3) {
     __asm__ volatile("ecall");
@@ -22,42 +23,27 @@ void Riscv::handleSupervisorTrap(uint64 syscall_code, uint64 arg0, uint64 arg1, 
     uint64 sepc = r_sepc();
 
     if(scause == ECALL_SUPERVISOR || scause == ECALL_USER) {
-        w_sepc(r_sepc()+4);
+        uint64 volatile sepc = r_sepc()+4;
         switch (syscall_code) {
             case MEM_ALLOC:
-                kprintString("allocate space of size ");
-                kprintInt(arg0);
-                kprintString("\n");
-
-                w_a0_context(5134);
+                w_a0_context((uint64)__mem_alloc(arg0 * MEM_BLOCK_SIZE));
                 break;
             case MEM_FREE:
-                kprintString("free space starting at ");
-                kprintInt(arg0);
-                kprintString("\n");
-                w_a0_context((int)-55);
+                w_a0_context(__mem_free((void*) arg0));
                 break;
 
             case THREAD_CREATE:
-                kprintString("create thread with: \n handle address: ");
-                kprintInt(arg0, 16);
-                kprintString("\n procedure address: ");
-                kprintInt(arg1, 16);
-                kprintString("\n argumets address: ");
-                kprintInt(arg2, 16);
-                kprintString("\n stack start address: ");
-                kprintInt(arg3, 16);
-                kprintString("\n");
-                w_a0_context((int)-88);
+                *(thread_t*)arg0 = (thread_t)TCB::createThread((void(*)(void*))arg1, (void*)arg2, (uint8*)arg3);
+                w_a0_context((*(thread_t*)arg0)?0:-2);
                 break;
             default:
                 kprintString("illegal syscall\n");
             case THREAD_EXIT:
-                kprintString("kill current thread\n");
-                w_a0_context((int)-101);
+                TCB::exit();
+                w_a0_context((int)-1);
                 break;
             case THREAD_DISPATCH:
-                kprintString("dispatch\n");
+                TCB::dispatch();
                 break;
 
             case SEM_OPEN:
@@ -103,6 +89,7 @@ void Riscv::handleSupervisorTrap(uint64 syscall_code, uint64 arg0, uint64 arg1, 
                 kprintString("\n");
                 break;
         }
+        w_sepc(sepc);
     } else if(scause == INTERRUPT_TIMER) {
         mc_sip(SIP_SSIP);
     } else if (scause == INTERRUPT_CONSOLE) {

@@ -1,8 +1,12 @@
 #include "../h/syscall_c.hpp"
+#include "../lib/hw.h"
 #include "../h/riscv.hpp"
+#include "../h/kernelPrinting.hpp"
 
 void* mem_alloc(size_t size) {
-    return (void*) Riscv::ecall(MEM_ALLOC, size);
+    if(size==0) return nullptr;
+    size_t blocks = (size + MEM_BLOCK_SIZE - 1) / MEM_BLOCK_SIZE;
+    return (void*) Riscv::ecall(MEM_ALLOC, blocks);
 }
 
 int mem_free(void* ptr) {
@@ -14,7 +18,8 @@ int thread_create(
         void(*start_routine)(void*),
         void* arg
 ) {
-    void* stack_space = mem_alloc(100);
+    void* stack_space = mem_alloc(DEFAULT_STACK_SIZE);
+    if(stack_space == nullptr) return -1;
     return (int) Riscv::ecall(THREAD_CREATE,
                               (uint64)handle,
                               (uint64)start_routine,
