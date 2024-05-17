@@ -47,37 +47,29 @@ void Riscv::handleSupervisorTrap(uint64 syscall_code, uint64 arg0, uint64 arg1, 
                 break;
 
             case SEM_OPEN:
-                kprintString("new semaphore: \n handle: ");
-                kprintInt(arg0, 16);
-                *((sem_t*)arg0) = (sem_t)0x554;
-                kprintString("\n with initial value: ");
-                kprintInt((uint)arg1, 10, 1);
-                kprintString("\n");
-                w_a0_context((int)-7);
+                *((sem_t*)arg0) = (sem_t)new kSemaphore((uint)arg1);
+                w_a0_context((*(sem_t*)arg0)?0:-1);
                 break;
             case SEM_CLOSE:
-                kprintString("close semaphore: \n handle: ");
-                kprintInt(arg0, 16);
-                kprintString("\n");
-                w_a0_context((int)-9);
+                w_a0_context((int)(
+                        ((sem_t)arg0)->close()
+                ));
+
                 break;
             case SEM_WAIT:
-                kprintString("wait on semaphore: ");
-                kprintInt(arg0, 16);
-                kprintString("\n");
-                w_a0_context((int)-11);
+                w_a0_context((int)(
+                        ((sem_t)arg0)->wait()
+                ));
                 break;
             case SEM_SIGNAL:
-                kprintString("signal on semaphore: ");
-                kprintInt(arg0, 16);
-                kprintString("\n");
-                w_a0_context((int)-73);
+                w_a0_context((int)(
+                        ((sem_t)arg0)->signal()
+                ));
                 break;
             case SEM_TRYWAIT:
-                kprintString("trywait on semaphore: ");
-                kprintInt(arg0, 16);
-                kprintString("\n");
-                w_a0_context((int)-77);
+                w_a0_context((int)(
+                        ((sem_t)arg0)->trywait()
+                ));
                 break;
             case GETC:
                 kprintString("read char \n");

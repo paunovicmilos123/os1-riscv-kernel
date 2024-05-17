@@ -3,8 +3,9 @@
 
 #include "../lib/hw.h"
 #include "tcb.hpp"
+#include "kSemaphore.hpp"
 typedef TCB* thread_t;
-typedef void* sem_t;
+typedef kSemaphore* sem_t;
 
 enum SYSCALL_CODES {
     MEM_ALLOC = 0x01,

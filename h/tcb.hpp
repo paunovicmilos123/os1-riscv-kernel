@@ -4,6 +4,7 @@
 #include "../lib/hw.h"
 #include "../lib/mem.h"
 #include "scheduler.hpp"
+#include "kSemaphore.hpp"
 
 class TCB {
 public:
@@ -25,6 +26,7 @@ public:
 private:
     friend class Riscv;
     friend class Scheduler;
+    friend class kSemaphore;
     TCB(Body body, void* arg, uint8* stack_space) :
         body(body),
         stack(stack_space),
