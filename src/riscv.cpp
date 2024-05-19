@@ -76,9 +76,7 @@ void Riscv::handleSupervisorTrap(uint64 syscall_code, uint64 arg0, uint64 arg1, 
                 w_a0_context((int)'a');
                 break;
             case PUTC:
-                kprintString("print char: ");
                 __putc(arg0);
-                kprintString("\n");
                 break;
         }
         w_sepc(sepc);
