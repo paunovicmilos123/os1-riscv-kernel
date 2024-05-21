@@ -72,8 +72,7 @@ void Riscv::handleSupervisorTrap(uint64 syscall_code, uint64 arg0, uint64 arg1, 
                 ));
                 break;
             case GETC:
-                kprintString("read char \n");
-                w_a0_context((int)'a');
+                w_a0_context((int)__getc());
                 break;
             case PUTC:
                 __putc(arg0);

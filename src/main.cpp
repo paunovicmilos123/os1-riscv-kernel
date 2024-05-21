@@ -3,54 +3,61 @@
 
 #include "../lib/console.h"
 #include "../h/syscall_c.hpp"
+#include "../h/printing.hpp"
 
 sem_t mutex;
 bool finishedA = false, finishedB = false, finishedC = false;
 void workerA(void *arg) {
     int i = sem_trywait(mutex);
-    kprintString("A wait: ");
-    kprintInt(i, 10, 1);
-    kprintString("\n");
+    printString("A wait: ");
+    printInt(i, 10, 1);
+    printString("\n");
     for(int i=0; i<10; i++)
         thread_dispatch();
     i = sem_signal(mutex);
-    kprintString("A signal: ");
-    kprintInt(i, 10, 1);
-    kprintString("\n");
+    printString("A signal: ");
+    printInt(i, 10, 1);
+    printString("\n");
     finishedA = true;
 }
 void workerB(void *arg) {
     int i = sem_wait(mutex);
-    kprintString("B wait: ");
-    kprintInt(i, 10, 1);
-    kprintString("\n");
+    printString("B wait: ");
+    printInt(i, 10, 1);
+    printString("\n");
     thread_dispatch();
     i = sem_signal(mutex);
-    kprintString("B signal: ");
-    kprintInt(i, 10, 1);
-    kprintString("\n");
+    printString("B signal: ");
+    printInt(i, 10, 1);
+    printString("\n");
     finishedB = true;
 }
 void workerC(void *arg) {
     int i = sem_trywait(mutex);
-    kprintString("C trywait: ");
-    kprintInt(i, 10, 1);
-    kprintString("\n");
+    printString("C trywait: ");
+    printInt(i, 10, 1);
+    printString("\n");
     thread_dispatch();
     i = sem_signal(mutex);
-    kprintString("C signal: ");
-    kprintInt(i, 10, 1);
-    kprintString("\n");
+    printString("C signal: ");
+    printInt(i, 10, 1);
+    printString("\n");
     i = sem_close(mutex);
-    kprintString("C close: ");
-    kprintInt(i, 10, 1);
-    kprintString("\n");
+    printString("C close: ");
+    printInt(i, 10, 1);
+    printString("\n");
     finishedB = true;
 }
 
 void userMain(void *arg) {
+    printString("semaphore initial value? ");
+    char c = getc();
+    printString("sem_open with ");
+    putc(c);
+    printString(")\n");
 
-    sem_open(&mutex, 1);
+
+    sem_open(&mutex, c - '0');
 
     thread_t threads[3];
     thread_create(&threads[0], workerA, nullptr);
