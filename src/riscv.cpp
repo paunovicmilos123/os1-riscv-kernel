@@ -1,5 +1,5 @@
 #include "../h/riscv.hpp"
-#include "../lib/console.h"
+#include "../h/kConsole.hpp"
 #include "../h/kernelPrinting.hpp"
 #include "../h/syscall_c.hpp"
 #include "../lib/mem.h"
@@ -13,7 +13,10 @@ uint64 Riscv::ecall(uint64 code, uint64 arg0, uint64 arg1, uint64 arg2, uint64 a
 
 void Riscv::popSppSpie()
 {
-    __asm__ volatile ("csrc sstatus, %[flag]" : : [flag] "r" (SSTATUS_SPP));
+    if(TCB::running->isKernelThread)
+        __asm__ volatile ("csrs sstatus, %[flag]" : : [flag] "r" (SSTATUS_SPP));
+    else
+        __asm__ volatile ("csrc sstatus, %[flag]" : : [flag] "r" (SSTATUS_SPP));
     __asm__ volatile ("csrw sepc, ra");
     __asm__ volatile ("sret");
 }
@@ -24,6 +27,7 @@ void Riscv::handleSupervisorTrap(uint64 syscall_code, uint64 arg0, uint64 arg1, 
 
     if(scause == ECALL_SUPERVISOR || scause == ECALL_USER) {
         uint64 volatile sepc = r_sepc()+4;
+        uint64 volatile sstatus = r_sstatus();
         switch (syscall_code) {
             case MEM_ALLOC:
                 w_a0_context((uint64)__mem_alloc(arg0 * MEM_BLOCK_SIZE));
@@ -72,17 +76,26 @@ void Riscv::handleSupervisorTrap(uint64 syscall_code, uint64 arg0, uint64 arg1, 
                 ));
                 break;
             case GETC:
-                w_a0_context((int)__getc());
+                //w_a0_context((int)__getc());
                 break;
             case PUTC:
-                __putc(arg0);
+                kConsole::putc(arg0);
+                TCB::dispatch(true);
                 break;
         }
         w_sepc(sepc);
+        w_sstatus(sstatus);
     } else if(scause == INTERRUPT_TIMER) {
         mc_sip(SIP_SSIP);
+        uint64 volatile sepc = r_sepc();
+        uint64 volatile sstatus = r_sstatus();
+        TCB::dispatch();
+        w_sepc(sepc);
+        w_sstatus(sstatus);
     } else if (scause == INTERRUPT_CONSOLE) {
-        console_handler();
+        if (plic_claim() == CONSOLE_IRQ) {
+            plic_complete(CONSOLE_IRQ);
+        }
     }else if (scause == ILLEGAL_INSTRUCTION) {
         kprintString("illegal instruction\n");
         Riscv::quit();

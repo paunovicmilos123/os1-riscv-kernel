@@ -4,6 +4,7 @@
 #include "../lib/console.h"
 #include "../h/syscall_c.hpp"
 #include "../h/printing.hpp"
+#include "../h/kConsole.hpp"
 
 sem_t mutex;
 bool finishedA = false, finishedB = false, finishedC = false;
@@ -42,6 +43,7 @@ void workerC(void *arg) {
     printString("C signal: ");
     printInt(i, 10, 1);
     printString("\n");
+    for(int k=0; k<100000; k++);
     i = sem_close(mutex);
     printString("C close: ");
     printInt(i, 10, 1);
@@ -51,10 +53,10 @@ void workerC(void *arg) {
 
 void userMain(void *arg) {
     printString("semaphore initial value? ");
-    char c = getc();
+    char c = '1';//getc();
     printString("sem_open with ");
     putc(c);
-    printString(")\n");
+    printString("\n");
 
 
     sem_open(&mutex, c - '0');
@@ -73,12 +75,15 @@ void userMain(void *arg) {
 
 void main() {
     Riscv::w_stvec((uint64) &Riscv::supervisorTrap);
-    Riscv::ms_sstatus(Riscv::SSTATUS_SIE);
 
+    uint8* console_thread_stack = (uint8*)__mem_alloc(DEFAULT_STACK_SIZE);
+    TCB::createThread(kConsole::handler, nullptr, console_thread_stack, true);
     TCB::running = TCB::createThread(nullptr, 0, 0);
 
     thread_t user_thread;
     thread_create(&user_thread, userMain, nullptr);
+
+    Riscv::ms_sstatus(Riscv::SSTATUS_SIE);
 
     while(!user_thread->isFinished()) {
         thread_dispatch();

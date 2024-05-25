@@ -9,14 +9,14 @@
 class TCB {
 public:
     using Body = void (*)(void*);
-    static TCB *createThread(Body body, void* arg, uint8* stack_space);
+    static TCB *createThread(Body body, void* arg, uint8* stack_space, bool isKernelThread=false);
     void* operator new(size_t size) {
         return __mem_alloc(size);
     }
     void operator delete(void* ptr) {
         __mem_free(ptr);
     }
-    static void dispatch();
+    static void dispatch(bool dispatchToKernelThread=false);
     static void exit();
 
     inline bool isFinished() const {return finished;}
@@ -27,7 +27,7 @@ private:
     friend class Riscv;
     friend class Scheduler;
     friend class kSemaphore;
-    TCB(Body body, void* arg, uint8* stack_space) :
+    TCB(Body body, void* arg, uint8* stack_space, bool isKernelThread=false) :
         body(body),
         stack(stack_space),
         arg(arg),
@@ -36,7 +36,8 @@ private:
             (uint64)(body?&stack[DEFAULT_STACK_SIZE]:0)
         }),
         finished(false),
-        next(nullptr) {
+        next(nullptr),
+        isKernelThread(isKernelThread) {
         if(body) {
             Scheduler::put(this);
         }
@@ -51,6 +52,7 @@ private:
     Context context;
     bool finished;
     TCB* next;
+    bool isKernelThread;
     static void contextSwitch(Context* oldRunning, Context* newRunning);
     static void wrapper();
 };

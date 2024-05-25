@@ -7,11 +7,12 @@ class Scheduler
 {
 private:
     static TCB* head;
+    static TCB* kernelThreads;
 
 public:
-    static TCB *get();
+    static TCB *get(bool getKernelThread=false);
 
-    static void put(TCB *thread);
+    static void put(TCB *thread, bool toFront=false);
 
 };
 

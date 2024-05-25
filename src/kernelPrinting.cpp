@@ -1,12 +1,12 @@
 #include "../h/kernelPrinting.hpp"
-#include "../lib/console.h"
+#include "../h/kConsole.hpp"
 #include "../lib/hw.h"
 
 void kprintString(char const *string)
 {
     while (*string != '\0')
     {
-        __putc(*string);
+        kConsole::putc(*string);
         string++;
     }
 }
@@ -16,7 +16,7 @@ char* kgetString(char *buf, int max) {
     char c;
 
     for(i=0; i+1 < max; ){
-        cc = __getc();
+        cc = kConsole::getc();
         if(cc < 1)
             break;
         c = cc;
@@ -62,5 +62,5 @@ void kprintInt(int xx, int base, int sgn)
         buf[i++] = '-';
 
     while(--i >= 0)
-        __putc(buf[i]);
+        kConsole::putc(buf[i]);
 }

@@ -6,14 +6,14 @@
 
 TCB* TCB::running = nullptr;
 
-TCB* TCB::createThread(Body body, void* arg, uint8* stack_space) {
-    return new TCB(body, arg, stack_space);
+TCB* TCB::createThread(Body body, void* arg, uint8* stack_space, bool isKernelThread) {
+    return new TCB(body, arg, stack_space, isKernelThread);
 }
 
-void TCB::dispatch() {
+void TCB::dispatch(bool dispatchToKernelThread) {
     TCB *old = running;
-    if (!old->isFinished()) { Scheduler::put(old); }
-    running = Scheduler::get();
+    if (!old->isFinished()) { Scheduler::put(old, dispatchToKernelThread); }
+    running = Scheduler::get(dispatchToKernelThread);
 
     TCB::contextSwitch(&old->context, &running->context);
 }
