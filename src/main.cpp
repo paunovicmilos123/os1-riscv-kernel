@@ -9,10 +9,19 @@
 sem_t mutex;
 bool finishedA = false, finishedB = false, finishedC = false;
 void workerA(void *arg) {
+    int c = getc();
     int i = sem_trywait(mutex);
     printString("A wait: ");
     printInt(i, 10, 1);
     printString("\n");
+    for(int i=0; i<4; i++) {
+        printString("A received ");
+        printInt(i);
+        printString(": ");
+        printInt(c);
+        printString("\n");
+        if(i<3) c = getc();
+    }
     for(int i=0; i<10; i++)
         thread_dispatch();
     i = sem_signal(mutex);
@@ -22,6 +31,13 @@ void workerA(void *arg) {
     finishedA = true;
 }
 void workerB(void *arg) {
+    for(int i=0; i<10; i++) {
+        printString("B i: ");
+        printInt(i);
+        printString("\n");
+        for (int j = 0; j < 100000; j++)
+            for(int k=0; k<5000; k++);
+    }
     int i = sem_wait(mutex);
     printString("B wait: ");
     printInt(i, 10, 1);
@@ -53,7 +69,7 @@ void workerC(void *arg) {
 
 void userMain(void *arg) {
     printString("semaphore initial value? ");
-    char c = '1';//getc();
+    char c = getc();
     printString("sem_open with ");
     putc(c);
     printString("\n");
@@ -74,6 +90,7 @@ void userMain(void *arg) {
 
 
 void main() {
+    kConsole::init();
     Riscv::w_stvec((uint64) &Riscv::supervisorTrap);
 
     uint8* console_thread_stack = (uint8*)__mem_alloc(DEFAULT_STACK_SIZE);

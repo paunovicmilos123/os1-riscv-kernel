@@ -76,7 +76,7 @@ void Riscv::handleSupervisorTrap(uint64 syscall_code, uint64 arg0, uint64 arg1, 
                 ));
                 break;
             case GETC:
-                //w_a0_context((int)__getc());
+                w_a0_context((int)kConsole::getc());
                 break;
             case PUTC:
                 kConsole::putc(arg0);
@@ -87,14 +87,25 @@ void Riscv::handleSupervisorTrap(uint64 syscall_code, uint64 arg0, uint64 arg1, 
         w_sstatus(sstatus);
     } else if(scause == INTERRUPT_TIMER) {
         mc_sip(SIP_SSIP);
-        uint64 volatile sepc = r_sepc();
-        uint64 volatile sstatus = r_sstatus();
-        TCB::dispatch();
-        w_sepc(sepc);
-        w_sstatus(sstatus);
+        // nit kernela se izvrsava atomski
+        if(!TCB::running->isKernelThread) {
+            uint64 volatile sepc = r_sepc();
+            uint64 volatile sstatus = r_sstatus();
+            TCB::dispatch();
+            w_sepc(sepc);
+            w_sstatus(sstatus);
+        }
     } else if (scause == INTERRUPT_CONSOLE) {
         if (plic_claim() == CONSOLE_IRQ) {
             plic_complete(CONSOLE_IRQ);
+
+            uint charsRead = 0;
+            volatile uint8 *cstatus = (volatile uint8 *) CONSOLE_STATUS;
+            volatile uint8 *crx = (volatile uint8 *) CONSOLE_RX_DATA;
+            while(*cstatus & CONSOLE_RX_STATUS_BIT && kConsole::canReceive() && charsRead<kConsole::MAX_CHARS_TO_READ) {
+                kConsole::receiveChar(*crx);
+                charsRead++;
+            }
         }
     }else if (scause == ILLEGAL_INSTRUCTION) {
         kprintString("illegal instruction\n");
