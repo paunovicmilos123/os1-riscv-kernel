@@ -3,89 +3,67 @@
 
 #include "../lib/console.h"
 #include "../h/syscall_c.hpp"
+#include "../h/syscall_cpp.hpp"
 #include "../h/printing.hpp"
 #include "../h/kConsole.hpp"
 
-sem_t mutex;
-bool finishedA = false, finishedB = false, finishedC = false;
-void workerA(void *arg) {
-    int c = getc();
-    int i = sem_trywait(mutex);
-    printString("A wait: ");
-    printInt(i, 10, 1);
-    printString("\n");
-    for(int i=0; i<4; i++) {
-        printString("A received ");
-        printInt(i);
-        printString(": ");
-        printInt(c);
-        printString("\n");
-        if(i<3) c = getc();
+
+int finished=0;
+
+class FasterPeriodicWorker : public PeriodicThread {
+public:
+    FasterPeriodicWorker(time_t period) : PeriodicThread(period) {
+
     }
-    for(int i=0; i<10; i++)
-        thread_dispatch();
-    i = sem_signal(mutex);
-    printString("A signal: ");
-    printInt(i, 10, 1);
-    printString("\n");
-    finishedA = true;
-}
-void workerB(void *arg) {
-    for(int i=0; i<10; i++) {
-        printString("B i: ");
+protected:
+    void periodicActivation() override {
+        static int i = 0;
+        printString("faster: ");
+        printInt(i++);
+        printString("\n");
+    }
+};
+class SlowerPeriodicWorker : public PeriodicThread {
+public:
+    SlowerPeriodicWorker(time_t period) : PeriodicThread(period) {
+
+    }
+protected:
+    void periodicActivation() override {
+        static int i = 0;
+        printString("slower: ");
+        printInt(i++);
+        printString("\n");
+    }
+};
+
+void workerA(void* arg) {
+    for(int i=0; i<100; i++) {
+        printInt((uint64)arg+10, 16);
+        printString(" i: ");
         printInt(i);
         printString("\n");
-        for (int j = 0; j < 100000; j++)
-            for(int k=0; k<5000; k++);
+        time_sleep(2);
     }
-    int i = sem_wait(mutex);
-    printString("B wait: ");
-    printInt(i, 10, 1);
-    printString("\n");
-    thread_dispatch();
-    i = sem_signal(mutex);
-    printString("B signal: ");
-    printInt(i, 10, 1);
-    printString("\n");
-    finishedB = true;
-}
-void workerC(void *arg) {
-    int i = sem_trywait(mutex);
-    printString("C trywait: ");
-    printInt(i, 10, 1);
-    printString("\n");
-    thread_dispatch();
-    i = sem_signal(mutex);
-    printString("C signal: ");
-    printInt(i, 10, 1);
-    printString("\n");
-    for(int k=0; k<100000; k++);
-    i = sem_close(mutex);
-    printString("C close: ");
-    printInt(i, 10, 1);
-    printString("\n");
-    finishedB = true;
+    finished++;
 }
 
-void userMain(void *arg) {
-    printString("semaphore initial value? ");
-    char c = getc();
-    printString("sem_open with ");
-    putc(c);
-    printString("\n");
+void userMainWrapper(void *arg) {
+    thread_t threads[1];
+    thread_create(threads, workerA, 0);
+    PeriodicThread* p0 = new FasterPeriodicWorker(10);
+    PeriodicThread* p1 = new SlowerPeriodicWorker(18);
+    p0->start();
+    p1->start();
 
-
-    sem_open(&mutex, c - '0');
-
-    thread_t threads[3];
-    thread_create(&threads[0], workerA, nullptr);
-    thread_create(&threads[1], workerB, nullptr);
-    thread_create(&threads[2], workerC, nullptr);
-
-    while(!(threads[0]->isFinished() && threads[1]->isFinished() && threads[2]->isFinished())) {
-        //kprintString("user main\n");
+    while(finished<1) {
         thread_dispatch();
     }
+
+    p0->terminate();
+    p1->terminate();
+    delete p0;
+    delete p1;
 }
 
 
@@ -98,7 +76,7 @@ void main() {
     TCB::running = TCB::createThread(nullptr, 0, 0);
 
     thread_t user_thread;
-    thread_create(&user_thread, userMain, nullptr);
+    thread_create(&user_thread, userMainWrapper, nullptr);
 
     Riscv::ms_sstatus(Riscv::SSTATUS_SIE);
 

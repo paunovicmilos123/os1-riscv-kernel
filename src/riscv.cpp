@@ -75,6 +75,15 @@ void Riscv::handleSupervisorTrap(uint64 syscall_code, uint64 arg0, uint64 arg1, 
                         ((sem_t)arg0)->trywait()
                 ));
                 break;
+            case TIME_SLEEP:
+                if(arg0==0) {
+                    w_a0_context((int)-1);
+                    break;
+                }
+                Scheduler::addSleeping(arg0);
+                TCB::dispatch();
+                w_a0_context((int)0);
+                break;
             case GETC:
                 w_a0_context((int)kConsole::getc());
                 break;
@@ -89,11 +98,15 @@ void Riscv::handleSupervisorTrap(uint64 syscall_code, uint64 arg0, uint64 arg1, 
         mc_sip(SIP_SSIP);
         // nit kernela se izvrsava atomski
         if(!TCB::running->isKernelThread) {
-            uint64 volatile sepc = r_sepc();
-            uint64 volatile sstatus = r_sstatus();
-            TCB::dispatch();
-            w_sepc(sepc);
-            w_sstatus(sstatus);
+            Scheduler::updateSleeping();
+            TCB::ticksRemaining--;
+            if(TCB::ticksRemaining == 0) {
+                uint64 volatile sepc = r_sepc();
+                uint64 volatile sstatus = r_sstatus();
+                TCB::dispatch();
+                w_sepc(sepc);
+                w_sstatus(sstatus);
+            }
         }
     } else if (scause == INTERRUPT_CONSOLE) {
         if (plic_claim() == CONSOLE_IRQ) {

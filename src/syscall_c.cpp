@@ -55,6 +55,10 @@ int sem_trywait(sem_t id) {
     return (int) Riscv::ecall(SEM_TRYWAIT, (uint64)id);
 }
 
+int time_sleep(time_t t) {
+    return (int) Riscv::ecall(TIME_SLEEP, (uint64)t);
+}
+
 char getc() {
     return (char) Riscv::ecall(GETC);
 }

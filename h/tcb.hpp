@@ -21,8 +21,12 @@ public:
 
     inline bool isFinished() const {return finished;}
     inline void setFinished(bool finished) { TCB::finished = finished;}
+    inline time_t getTimeSlice() const { return timeSlice; }
+    inline bool isReady() const { return ready; }
+    inline void setReady(bool ready) { this->ready = ready; }
 
     static TCB* running;
+    static time_t ticksRemaining;
 private:
     friend class Riscv;
     friend class Scheduler;
@@ -37,7 +41,10 @@ private:
         }),
         finished(false),
         next(nullptr),
-        isKernelThread(isKernelThread) {
+        isKernelThread(isKernelThread),
+        timeSlice(DEFAULT_TIME_SLICE),
+        sleepRemaining(0),
+        ready(true) {
         if(body) {
             Scheduler::put(this);
         }
@@ -53,6 +60,9 @@ private:
     bool finished;
     TCB* next;
     bool isKernelThread;
+    time_t timeSlice;
+    time_t sleepRemaining;
+    bool ready;
     static void contextSwitch(Context* oldRunning, Context* newRunning);
     static void wrapper();
 };

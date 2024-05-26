@@ -36,6 +36,18 @@ private:
     sem_t myHandle;
 };
 
+class PeriodicThread : public Thread {
+public:
+    void terminate ();
+protected:
+    PeriodicThread (time_t period);
+    virtual void periodicActivation () {}
+private:
+    time_t period;
+    static void wrapper(void* thread_handle);
+};
+
+
 class Console {
 public:
     static char getc ();

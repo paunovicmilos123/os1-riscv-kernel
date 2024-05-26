@@ -5,6 +5,7 @@
 #include "../h/kernelPrinting.hpp"
 
 TCB* TCB::running = nullptr;
+time_t TCB::ticksRemaining = 0;
 
 TCB* TCB::createThread(Body body, void* arg, uint8* stack_space, bool isKernelThread) {
     return new TCB(body, arg, stack_space, isKernelThread);
@@ -12,7 +13,7 @@ TCB* TCB::createThread(Body body, void* arg, uint8* stack_space, bool isKernelTh
 
 void TCB::dispatch(bool dispatchToKernelThread) {
     TCB *old = running;
-    if (!old->isFinished()) { Scheduler::put(old, dispatchToKernelThread); }
+    if (!old->isFinished() && old->isReady()) { Scheduler::put(old, dispatchToKernelThread); }
     running = Scheduler::get(dispatchToKernelThread);
 
     TCB::contextSwitch(&old->context, &running->context);

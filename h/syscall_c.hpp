@@ -21,6 +21,8 @@ enum SYSCALL_CODES {
     SEM_SIGNAL = 0x24,
     SEM_TRYWAIT = 0x26,
 
+    TIME_SLEEP = 0x31,
+
     GETC = 0x41,
     PUTC = 0x42
 };
@@ -41,6 +43,8 @@ int sem_close (sem_t handle);
 int sem_wait (sem_t id);
 int sem_signal (sem_t id);
 int sem_trywait(sem_t id);
+
+int time_sleep(time_t);
 
 const int EOF = -1;
 char getc();
