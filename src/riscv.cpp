@@ -99,8 +99,7 @@ void Riscv::handleSupervisorTrap(uint64 syscall_code, uint64 arg0, uint64 arg1, 
         // nit kernela se izvrsava atomski
         if(!TCB::running->isKernelThread) {
             Scheduler::updateSleeping();
-            TCB::ticksRemaining--;
-            if(TCB::ticksRemaining == 0) {
+            if(TCB::ticksRemaining==0 || --TCB::ticksRemaining==0) {
                 uint64 volatile sepc = r_sepc();
                 uint64 volatile sstatus = r_sstatus();
                 TCB::dispatch();

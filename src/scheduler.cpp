@@ -23,7 +23,9 @@ TCB *Scheduler::get(bool getKernelThread)
         ret->next = nullptr;
     }
 
-    TCB::ticksRemaining = ret->getTimeSlice();
+    // ako je proslu nit prekinula interna nit kernela, ne obnavlja joj se time slice
+    if(!TCB::running->isKernelThread)
+        TCB::ticksRemaining = ret->getTimeSlice();
 
     return ret;
 }

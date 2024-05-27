@@ -5,7 +5,7 @@
 #include "../h/kernelPrinting.hpp"
 
 TCB* TCB::running = nullptr;
-time_t TCB::ticksRemaining = 0;
+time_t TCB::ticksRemaining = DEFAULT_TIME_SLICE;
 
 TCB* TCB::createThread(Body body, void* arg, uint8* stack_space, bool isKernelThread) {
     return new TCB(body, arg, stack_space, isKernelThread);
