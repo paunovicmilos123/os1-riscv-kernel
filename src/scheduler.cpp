@@ -72,3 +72,18 @@ void Scheduler::addSleeping(time_t t) {
 void Scheduler::updateSleeping() {
     sleepingList.updateSleeping();
 }
+
+void Scheduler::killAll() {
+    sleepingList.wakeAll();
+    TCB* t;
+    while(head) {
+        t = head;
+        head = head->next;
+        delete t;
+    }
+    while(kernelThreads) {
+        t = kernelThreads;
+        kernelThreads = kernelThreads->next;
+        delete t;
+    }
+}

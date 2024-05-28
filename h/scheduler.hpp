@@ -20,6 +20,7 @@ public:
     static void addSleeping(time_t);
     static void updateSleeping();
 
+    static void killAll();
 };
 
 #endif //_SCHEDULER_HPP

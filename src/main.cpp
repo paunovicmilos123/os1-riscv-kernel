@@ -71,4 +71,9 @@ void main() {
     while(!user_thread->isFinished()) {
         thread_dispatch();
     }
+
+    Riscv::mc_sstatus(Riscv::SSTATUS_SIE);
+    kSemaphore::deleteAll();
+    Scheduler::killAll();
+    delete TCB::running;
 }

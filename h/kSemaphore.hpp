@@ -27,6 +27,10 @@ public:
     void* operator new(size_t size) {
         return __mem_alloc(size);
     }
+    void operator delete(void* ptr) noexcept {
+        ((kSemaphore*)ptr)->close();
+        __mem_free(ptr);
+    }
 
     int wait();
     int timedwait(time_t);
@@ -35,6 +39,7 @@ public:
     int close();
 
     static void updateSleeping();
+    static void deleteAll();
 
 protected:
     void block();

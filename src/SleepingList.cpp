@@ -44,3 +44,9 @@ void SleepingList::wakeOne() {
     if(sleeping) sleeping->sleepRemaining += woken->sleepRemaining;
     Scheduler::put(woken);
 }
+
+void SleepingList::wakeAll() {
+    while(sleeping) {
+        wakeOne();
+    }
+}

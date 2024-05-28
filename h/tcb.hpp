@@ -13,7 +13,7 @@ public:
     void* operator new(size_t size) {
         return __mem_alloc(size);
     }
-    void operator delete(void* ptr) {
+    void operator delete(void* ptr) noexcept {
         __mem_free(ptr);
     }
     static void dispatch(bool dispatchToKernelThread=false);

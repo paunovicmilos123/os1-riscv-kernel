@@ -86,6 +86,7 @@ int kSemaphore::close() {
     while(blocked) {
         unblock();
     }
+    sleepingList.wakeAll();
     if(!open)
         return SEM_DEAD;
     open = false;
@@ -105,5 +106,14 @@ void kSemaphore::updateSleeping() {
     while(t) {
         t->tick();
         t = t->next;
+    }
+}
+
+void kSemaphore::deleteAll() {
+    kSemaphore* t;
+    while(head) {
+        t = head;
+        head = head->next;
+        delete t;
     }
 }
