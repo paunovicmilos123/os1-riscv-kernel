@@ -2,6 +2,7 @@
 #define _SCHEDULER_HPP
 
 #include "../lib/hw.h"
+#include "SleepingList.hpp"
 
 class TCB;
 
@@ -10,7 +11,7 @@ class Scheduler
 private:
     static TCB* head;
     static TCB* kernelThreads;
-    static TCB* sleeping;
+    static SleepingList sleepingList;
 
 public:
     static TCB *get(bool getKernelThread=false);

@@ -31,6 +31,7 @@ private:
     friend class Riscv;
     friend class Scheduler;
     friend class kSemaphore;
+    friend class SleepingList;
     TCB(Body body, void* arg, uint8* stack_space, bool isKernelThread=false) :
         body(body),
         stack(stack_space),
