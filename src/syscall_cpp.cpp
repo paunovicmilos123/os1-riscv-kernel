@@ -64,7 +64,7 @@ int Semaphore::signal() {
 }
 
 int Semaphore::timedWait(time_t t) {
-    return 0;
+    return sem_timedwait(myHandle, t);
 }
 
 int Semaphore::tryWait() {

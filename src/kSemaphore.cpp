@@ -1,6 +1,8 @@
 #include "../h/kSemaphore.hpp"
 #include "../h/riscv.hpp"
 
+kSemaphore* kSemaphore::head = nullptr;
+
 int kSemaphore::wait() {
     if(!open) return SEM_DEAD;
     if(--value < 0) {
@@ -15,6 +17,28 @@ int kSemaphore::wait() {
     return 0;
 }
 
+int kSemaphore::timedwait(time_t t) {
+    if(!open) return SEM_DEAD;
+    if(t==0) {
+        return trywait()*-1;
+    }
+
+    int ret = 0;
+
+    if(--value < 0) {
+        timedBlock(t);
+        TCB *old = TCB::running;
+        TCB::running = Scheduler::get();
+        Riscv::pushRegisters();
+        TCB::contextSwitch(&old->context, &TCB::running->context);
+        Riscv::popRegisters();
+        if(TCB::running->sleepRemaining==0) ret = SEM_TIMEOUT;
+        TCB::running->sleepRemaining = 0;
+    }
+    if(!open) return SEM_DEAD;
+    return ret;
+}
+
 int kSemaphore::trywait() {
     if(!open) return SEM_DEAD;
     if(value<=0)
@@ -25,8 +49,10 @@ int kSemaphore::trywait() {
 
 int kSemaphore::signal() {
     if(!open) return SEM_DEAD;
-    if(++value <= 0)
-        unblock();
+    if(++value <= 0) {
+        if(!unblock())
+            sleepingList.wakeOne();
+    }
     return 0;
 }
 
@@ -44,14 +70,16 @@ void kSemaphore::block() {
     TCB::running->next = nullptr;
 }
 
-void kSemaphore::unblock() {
+bool kSemaphore::unblock() {
     TCB* ret = nullptr;
     if(blocked) {
         ret = blocked;
         blocked = blocked->next;
         ret->next = nullptr;
         Scheduler::put(ret);
-    }
+        return true;
+    } else
+        return false;
 }
 
 int kSemaphore::close() {
@@ -62,4 +90,20 @@ int kSemaphore::close() {
         return SEM_DEAD;
     open = false;
     return 0;
+}
+
+void kSemaphore::timedBlock(time_t t) {
+    sleepingList.addSleeping(t);
+}
+
+void kSemaphore::tick() {
+    sleepingList.updateSleeping();
+}
+
+void kSemaphore::updateSleeping() {
+    kSemaphore* t = kSemaphore::head;
+    while(t) {
+        t->tick();
+        t = t->next;
+    }
 }

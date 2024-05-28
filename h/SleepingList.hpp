@@ -14,6 +14,7 @@ public:
 
     void addSleeping(time_t);
     void updateSleeping();
+    void wakeOne();
 };
 
 

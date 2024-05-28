@@ -32,9 +32,15 @@ void SleepingList::updateSleeping() {
     if(sleeping)
         sleeping->sleepRemaining--;
     while(sleeping && sleeping->sleepRemaining==0) {
-        TCB* woken = sleeping;
-        woken->setReady(true);
-        sleeping = sleeping->next;
-        Scheduler::put(woken);
+        wakeOne();
     }
+}
+
+void SleepingList::wakeOne() {
+    if(!sleeping) return;
+    TCB* woken = sleeping;
+    woken->setReady(true);
+    sleeping = sleeping->next;
+    if(sleeping) sleeping->sleepRemaining += woken->sleepRemaining;
+    Scheduler::put(woken);
 }

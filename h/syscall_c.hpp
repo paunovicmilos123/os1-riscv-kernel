@@ -19,6 +19,7 @@ enum SYSCALL_CODES {
     SEM_CLOSE = 0x22,
     SEM_WAIT = 0x23,
     SEM_SIGNAL = 0x24,
+    SEM_TIMEDWAIT = 0x25,
     SEM_TRYWAIT = 0x26,
 
     TIME_SLEEP = 0x31,
@@ -42,6 +43,7 @@ int sem_open(sem_t* handle, unsigned init);
 int sem_close (sem_t handle);
 int sem_wait (sem_t id);
 int sem_signal (sem_t id);
+int sem_timedwait(sem_t id, time_t timeout);
 int sem_trywait(sem_t id);
 
 int time_sleep(time_t);

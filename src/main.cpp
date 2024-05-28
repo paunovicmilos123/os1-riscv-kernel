@@ -7,63 +7,51 @@
 #include "../h/printing.hpp"
 #include "../h/kConsole.hpp"
 
+sem_t sem;
+int finished;
+void worker(void* arg) {
+    int id = (uint64)arg;
+    printInt(10+(uint64)arg, 16);
+    printString("\n");
+    int ret = sem_timedwait(sem, 6*id);
+    printInt(10+(uint64)arg, 16);
+    printString(" sem: ");
+    printInt(ret, 10, 1);
+    printString("\n");
 
-int finished=0;
-
-class FasterPeriodicWorker : public PeriodicThread {
-public:
-    FasterPeriodicWorker(time_t period) : PeriodicThread(period) {
-
-    }
-protected:
-    void periodicActivation() override {
-        static int i = 0;
-        printString("faster: ");
-        printInt(i++);
-        printString("\n");
-    }
-};
-class SlowerPeriodicWorker : public PeriodicThread {
-public:
-    SlowerPeriodicWorker(time_t period) : PeriodicThread(period) {
-
-    }
-protected:
-    void periodicActivation() override {
-        static int i = 0;
-        printString("slower: ");
-        printInt(i++);
-        printString("\n");
-    }
-};
-
-void workerA(void* arg) {
-    for(int i=0; i<100; i++) {
-        printInt((uint64)arg+10, 16);
-        printString(" i: ");
+    for(int i=0; i<10; i++) {
+        for(int j=0; j<10000; j++)
+            for(int k=0; k<5000; k++);
+        printInt(10+(uint64)arg, 16);
+        printString(": ");
         printInt(i);
         printString("\n");
-        time_sleep(2);
     }
+
+    if(ret==0) sem_signal(sem);
     finished++;
+}
+void sleepy(void* arg) {
+    printString("sleepy\n");
+    time_sleep(4);
+    printString("woken\n");
 }
 
 void userMainWrapper(void *arg) {
-    thread_t threads[1];
-    thread_create(threads, workerA, 0);
-    PeriodicThread* p0 = new FasterPeriodicWorker(10);
-    PeriodicThread* p1 = new SlowerPeriodicWorker(18);
-    p0->start();
-    p1->start();
+    sem_open(&sem, 1);
+    finished = 0;
+    thread_t sleepyThreads[1];
+    for(uint64 i=0; i<sizeof(sleepyThreads)/sizeof(thread_t); i++)
+        thread_create(sleepyThreads+i, sleepy, (void*)i);
 
-    while(finished<1) {
+    thread_t threads[3];
+    for(uint64 i=0; i<sizeof(threads)/sizeof(thread_t); i++)
+        thread_create(threads+i, worker, (void*)i);
+
+
+    while(finished<3) {
         thread_dispatch();
     }
-
-    p0->terminate();
-    p1->terminate();
-    delete p0;
-    delete p1;
 }
 
 

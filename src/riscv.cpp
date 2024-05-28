@@ -58,7 +58,6 @@ void Riscv::handleSupervisorTrap(uint64 syscall_code, uint64 arg0, uint64 arg1, 
                 w_a0_context((int)(
                         ((sem_t)arg0)->close()
                 ));
-
                 break;
             case SEM_WAIT:
                 w_a0_context((int)(
@@ -70,11 +69,17 @@ void Riscv::handleSupervisorTrap(uint64 syscall_code, uint64 arg0, uint64 arg1, 
                         ((sem_t)arg0)->signal()
                 ));
                 break;
+            case SEM_TIMEDWAIT:
+                w_a0_context((int)(
+                        ((sem_t)arg0)->timedwait(arg1)
+                        ));
+                break;
             case SEM_TRYWAIT:
                 w_a0_context((int)(
                         ((sem_t)arg0)->trywait()
                 ));
                 break;
+
             case TIME_SLEEP:
                 if(arg0==0) {
                     w_a0_context((int)-1);
@@ -84,6 +89,7 @@ void Riscv::handleSupervisorTrap(uint64 syscall_code, uint64 arg0, uint64 arg1, 
                 TCB::dispatch();
                 w_a0_context((int)0);
                 break;
+
             case GETC:
                 w_a0_context((int)kConsole::getc());
                 break;
@@ -99,6 +105,7 @@ void Riscv::handleSupervisorTrap(uint64 syscall_code, uint64 arg0, uint64 arg1, 
         // nit kernela se izvrsava atomski
         if(!TCB::running->isKernelThread) {
             Scheduler::updateSleeping();
+            kSemaphore::updateSleeping();
             if(TCB::ticksRemaining==0 || --TCB::ticksRemaining==0) {
                 uint64 volatile sepc = r_sepc();
                 uint64 volatile sstatus = r_sstatus();

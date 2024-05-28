@@ -51,6 +51,10 @@ int sem_signal (sem_t id) {
     return (int) Riscv::ecall(SEM_SIGNAL, (uint64)id);
 }
 
+int sem_timedwait(sem_t id, time_t timeout) {
+    return (int) Riscv::ecall(SEM_TIMEDWAIT, (uint64)id, (uint64)timeout);
+}
+
 int sem_trywait(sem_t id) {
     return (int) Riscv::ecall(SEM_TRYWAIT, (uint64)id);
 }
