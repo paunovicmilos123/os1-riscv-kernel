@@ -1,7 +1,5 @@
 #include "../h/syscall_c.hpp"
-#include "../lib/hw.h"
 #include "../h/riscv.hpp"
-#include "../h/kernelPrinting.hpp"
 
 void* mem_alloc(size_t size) {
     if(size==0) return nullptr;

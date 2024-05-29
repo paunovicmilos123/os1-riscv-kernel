@@ -37,8 +37,8 @@ void Riscv::handleSupervisorTrap(uint64 syscall_code, uint64 arg0, uint64 arg1, 
                 break;
 
             case THREAD_CREATE:
-                *(thread_t*)arg0 = (thread_t)TCB::createThread((void(*)(void*))arg1, (void*)arg2, (uint8*)arg3);
-                w_a0_context((*(thread_t*)arg0)?0:-2);
+                *(TCB**)arg0 = (TCB*)TCB::createThread((void(*)(void*))arg1, (void*)arg2, (uint8*)arg3);
+                w_a0_context((*(TCB**)arg0)?0:-2);
                 break;
             default:
                 kprintString("illegal syscall\n");
@@ -51,32 +51,32 @@ void Riscv::handleSupervisorTrap(uint64 syscall_code, uint64 arg0, uint64 arg1, 
                 break;
 
             case SEM_OPEN:
-                *((sem_t*)arg0) = (sem_t)new kSemaphore((uint)arg1);
-                w_a0_context((*(sem_t*)arg0)?0:-1);
+                *((kSemaphore**)arg0) = (kSemaphore*)new kSemaphore((uint)arg1);
+                w_a0_context((*(kSemaphore**)arg0)?0:-1);
                 break;
             case SEM_CLOSE:
                 w_a0_context((int)(
-                        ((sem_t)arg0)->close()
+                        ((kSemaphore*)arg0)->close()
                 ));
                 break;
             case SEM_WAIT:
                 w_a0_context((int)(
-                        ((sem_t)arg0)->wait()
+                        ((kSemaphore*)arg0)->wait()
                 ));
                 break;
             case SEM_SIGNAL:
                 w_a0_context((int)(
-                        ((sem_t)arg0)->signal()
+                        ((kSemaphore*)arg0)->signal()
                 ));
                 break;
             case SEM_TIMEDWAIT:
                 w_a0_context((int)(
-                        ((sem_t)arg0)->timedwait(arg1)
+                        ((kSemaphore*)arg0)->timedwait(arg1)
                         ));
                 break;
             case SEM_TRYWAIT:
                 w_a0_context((int)(
-                        ((sem_t)arg0)->trywait()
+                        ((kSemaphore*)arg0)->trywait()
                 ));
                 break;
 

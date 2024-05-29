@@ -2,10 +2,10 @@
 #define SYSCALL_C_HPP
 
 #include "../lib/hw.h"
-#include "tcb.hpp"
-#include "kSemaphore.hpp"
-typedef TCB* thread_t;
-typedef kSemaphore* sem_t;
+class _thread;
+class _sem;
+typedef _thread* thread_t;
+typedef _sem* sem_t;
 
 enum SYSCALL_CODES {
     MEM_ALLOC = 0x01,
