@@ -1,0 +1,5 @@
+.idea/
+build/
+test/
+kernel
+kernel.asm
