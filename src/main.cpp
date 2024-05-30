@@ -3,13 +3,7 @@
 #include "../h/syscall_c.hpp"
 #include "../h/kConsole.hpp"
 
-void userMain() {
-    putc('z');
-    putc('d');
-    putc('d');
-    putc('z');
-    putc('\n');
-}
+void userMain();
 void userMainWrapper(void *arg) {
     userMain();
 }
