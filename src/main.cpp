@@ -1,7 +1,8 @@
 #include "../h/riscv.hpp"
+#include "../h/kConsole.hpp"
+#include "../h/kAllocator.hpp"
 
 #include "../h/syscall_c.hpp"
-#include "../h/kConsole.hpp"
 
 void userMain();
 void userMainWrapper(void *arg) {
@@ -9,15 +10,16 @@ void userMainWrapper(void *arg) {
 }
 
 void main() {
+    kAllocator::init();
     kConsole::init();
     Riscv::w_stvec((uint64) &Riscv::supervisorTrap);
 
-    uint8* consoleHandlerStack = (uint8*)__mem_alloc(DEFAULT_STACK_SIZE);
+    uint8* consoleHandlerStack = (uint8*) kAllocator::alloc(DEFAULT_STACK_SIZE);
     TCB::createThread(kConsole::handler, nullptr, consoleHandlerStack, true);
 
     TCB::running = TCB::createThread(nullptr, 0, 0);
 
-    uint8 * userThreadStack = (uint8*) __mem_alloc(DEFAULT_STACK_SIZE);
+    uint8 * userThreadStack = (uint8*) kAllocator::alloc(DEFAULT_STACK_SIZE);
     TCB* userThread = TCB::createThread(userMainWrapper, 0, userThreadStack);
 
     Riscv::ms_sstatus(Riscv::SSTATUS_SIE);

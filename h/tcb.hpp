@@ -2,7 +2,7 @@
 #define _THREAD_HPP
 
 #include "../lib/hw.h"
-#include "../lib/mem.h"
+#include "../h/kAllocator.hpp"
 #include "scheduler.hpp"
 #include "kSemaphore.hpp"
 
@@ -11,10 +11,10 @@ public:
     using Body = void (*)(void*);
     static TCB *createThread(Body body, void* arg, uint8* stack_space, bool isKernelThread=false);
     void* operator new(size_t size) {
-        return __mem_alloc(size);
+        return kAllocator::alloc(size);
     }
     void operator delete(void* ptr) noexcept {
-        __mem_free(ptr);
+        kAllocator::free(ptr);
     }
     static void dispatch(bool dispatchToKernelThread=false);
     static void exit();

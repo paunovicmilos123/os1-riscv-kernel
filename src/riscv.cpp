@@ -2,7 +2,7 @@
 #include "../h/kConsole.hpp"
 #include "../h/kernelPrinting.hpp"
 #include "../h/syscall_c.hpp"
-#include "../lib/mem.h"
+#include "../h/kAllocator.hpp"
 
 uint64 Riscv::ecall(uint64 code, uint64 arg0, uint64 arg1, uint64 arg2, uint64 arg3) {
     __asm__ volatile("ecall");
@@ -30,10 +30,10 @@ void Riscv::handleSupervisorTrap(uint64 syscall_code, uint64 arg0, uint64 arg1, 
         uint64 volatile sstatus = r_sstatus();
         switch (syscall_code) {
             case MEM_ALLOC:
-                w_a0_context((uint64)__mem_alloc(arg0 * MEM_BLOCK_SIZE));
+                w_a0_context((uint64)kAllocator::alloc(arg0 * MEM_BLOCK_SIZE));
                 break;
             case MEM_FREE:
-                w_a0_context(__mem_free((void*) arg0));
+                w_a0_context(kAllocator::free((void*) arg0));
                 break;
 
             case THREAD_CREATE:

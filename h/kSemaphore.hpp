@@ -1,8 +1,8 @@
 #ifndef _KERNELSEMAPHORE_HPP
 #define _KERNELSEMAPHORE_HPP
 
-#include "../lib/mem.h"
 #include "../lib/hw.h"
+#include "../h/kAllocator.hpp"
 #include "tcb.hpp"
 #include "SleepingList.hpp"
 
@@ -25,11 +25,11 @@ public:
         head = this;
     }
     void* operator new(size_t size) {
-        return __mem_alloc(size);
+        return kAllocator::alloc(size);
     }
     void operator delete(void* ptr) noexcept {
         ((kSemaphore*)ptr)->close();
-        __mem_free(ptr);
+        kAllocator::free(ptr);
     }
 
     int wait();

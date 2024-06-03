@@ -23,7 +23,7 @@ void TCB::exit() {
     running->setFinished(true);
     TCB *old = running;
     running = Scheduler::get();
-    __mem_free(old->stack);
+    kAllocator::free(old->stack);
     old->stack = nullptr;
     TCB::contextSwitch(&old->context, &running->context);
 }

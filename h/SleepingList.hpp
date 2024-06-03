@@ -2,7 +2,7 @@
 #define _SLEEPINGLIST_HPP
 
 #include "../lib/hw.h"
-#include "../lib/mem.h"
+#include "../h/kAllocator.hpp"
 
 class TCB;
 
@@ -12,11 +12,11 @@ public:
 
     }
     void* operator new(size_t size) {
-        return __mem_alloc(size);
+        return kAllocator::alloc(size);
     }
     void operator delete(void* ptr) noexcept {
         ((SleepingList*)ptr)->wakeAll();
-        __mem_free(ptr);
+        kAllocator::free(ptr);
     }
     TCB* sleeping;
 
