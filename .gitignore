@@ -3,3 +3,5 @@ build/
 test/
 kernel
 kernel.asm
+*.s
+.gdbinit
