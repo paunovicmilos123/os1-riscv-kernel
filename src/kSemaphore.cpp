@@ -98,7 +98,7 @@ void kSemaphore::timedBlock(time_t t) {
 }
 
 void kSemaphore::tick() {
-    sleepingList.updateSleeping();
+    value += sleepingList.updateSleeping();
 }
 
 void kSemaphore::updateSleeping() {

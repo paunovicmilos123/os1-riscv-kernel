@@ -21,7 +21,7 @@ public:
     TCB* sleeping;
 
     void addSleeping(time_t);
-    void updateSleeping();
+    int updateSleeping();
     void wakeOne();
     void wakeAll();
 };

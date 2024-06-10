@@ -28,12 +28,15 @@ void SleepingList::addSleeping(time_t t) {
     TCB::running->next = next;
 }
 
-void SleepingList::updateSleeping() {
+int SleepingList::updateSleeping() {
+    int numberOfWoken = 0;
     if(sleeping)
         sleeping->sleepRemaining--;
     while(sleeping && sleeping->sleepRemaining==0) {
         wakeOne();
+        numberOfWoken++;
     }
+    return numberOfWoken;
 }
 
 void SleepingList::wakeOne() {
