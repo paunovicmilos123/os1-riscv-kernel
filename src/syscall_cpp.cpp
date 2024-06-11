@@ -34,6 +34,10 @@ int Thread::start() {
     return thread_create(&this->myHandle, wrapper, this);
 }
 
+uint64 Thread::getThreadId() {
+    return thread_id();
+}
+
 void Thread::wrapper(void *thread_handle) {
     Thread* t = (Thread*)thread_handle;
     if(t->body)

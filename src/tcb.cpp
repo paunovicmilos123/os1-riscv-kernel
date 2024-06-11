@@ -6,6 +6,7 @@
 
 TCB* TCB::running = nullptr;
 time_t TCB::ticksRemaining = DEFAULT_TIME_SLICE;
+uint64 TCB::numOfThreads = 10;
 
 TCB* TCB::createThread(Body body, void* arg, uint8* stack_space, bool isKernelThread) {
     return new TCB(body, arg, stack_space, isKernelThread);

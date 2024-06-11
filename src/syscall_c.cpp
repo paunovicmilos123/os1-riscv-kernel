@@ -33,6 +33,10 @@ void thread_dispatch() {
     Riscv::ecall(THREAD_DISPATCH);
 }
 
+uint64 thread_id() {
+    return (uint64) Riscv::ecall(THREAD_ID);
+}
+
 int sem_open(sem_t* handle, unsigned init) {
     return (int) Riscv::ecall(SEM_OPEN, (uint64)handle, (uint64)init);
 }

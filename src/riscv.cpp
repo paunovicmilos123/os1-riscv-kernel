@@ -49,6 +49,9 @@ void Riscv::handleSupervisorTrap(uint64 syscall_code, uint64 arg0, uint64 arg1, 
             case THREAD_DISPATCH:
                 TCB::dispatch();
                 break;
+            case THREAD_ID:
+                w_a0_context(TCB::running->id);
+                break;
 
             case SEM_OPEN:
                 *((kSemaphore**)arg0) = (kSemaphore*)new kSemaphore((uint)arg1);

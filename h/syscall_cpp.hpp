@@ -9,6 +9,7 @@ public:
     virtual ~Thread ();
 
     int start ();
+    uint64 getThreadId();
 
     static void dispatch ();
     static int sleep (time_t);

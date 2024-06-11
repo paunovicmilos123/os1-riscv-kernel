@@ -49,6 +49,9 @@ private:
         if(body) {
             Scheduler::put(this);
         }
+        if(!isKernelThread) {
+            id = numOfThreads++;
+        }
     }
     struct Context {
         uint64 ra;
@@ -64,6 +67,8 @@ private:
     time_t timeSlice;
     time_t sleepRemaining;
     bool ready;
+    uint64 id;
+    static uint64 numOfThreads;
     static void contextSwitch(Context* oldRunning, Context* newRunning);
     static void wrapper();
 };

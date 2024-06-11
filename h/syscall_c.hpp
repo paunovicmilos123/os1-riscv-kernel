@@ -14,6 +14,7 @@ enum SYSCALL_CODES {
     THREAD_CREATE = 0x11,
     THREAD_EXIT = 0x12,
     THREAD_DISPATCH = 0x13,
+    THREAD_ID = 0x14,
 
     SEM_OPEN = 0x21,
     SEM_CLOSE = 0x22,
@@ -38,6 +39,7 @@ int thread_create(
 );
 int thread_exit();
 void thread_dispatch();
+uint64 thread_id();
 
 int sem_open(sem_t* handle, unsigned init);
 int sem_close (sem_t handle);
