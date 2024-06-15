@@ -55,6 +55,10 @@ int Thread::ping(Thread* t) {
     return thread_ping(t->myHandle);
 }
 
+void Thread::join(time_t t) {
+    thread_join(this->myHandle, t);
+}
+
 
 Semaphore::Semaphore(unsigned int init, bool priority) {
     sem_open(&myHandle, init, priority);

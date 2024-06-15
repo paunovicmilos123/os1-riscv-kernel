@@ -41,6 +41,10 @@ int thread_ping(thread_t handle) {
     return (int) Riscv::ecall(THREAD_PING, (uint64)handle);
 }
 
+void thread_join(thread_t handle, time_t t) {
+    Riscv::ecall(THREAD_JOIN, (uint64)handle, t);
+}
+
 int sem_open(sem_t* handle, unsigned init, bool priority) {
     return (int) Riscv::ecall(SEM_OPEN, (uint64)handle, (uint64)init, (uint64)priority);
 }

@@ -55,6 +55,9 @@ void Riscv::handleSupervisorTrap(uint64 syscall_code, uint64 arg0, uint64 arg1, 
             case THREAD_PING:
                 w_a0_context(((TCB*)arg0)->ping());
                 break;
+            case THREAD_JOIN:
+                ((TCB*)arg0)->join(arg1);
+                break;
 
             case SEM_OPEN:
                 *((kSemaphore**)arg0) = (kSemaphore*)new kSemaphore((uint)arg1, (bool)arg2);

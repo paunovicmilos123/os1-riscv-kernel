@@ -6,6 +6,8 @@
 #include "scheduler.hpp"
 #include "kSemaphore.hpp"
 
+class kSemaphore;
+
 class TCB {
 public:
     using Body = void (*)(void*);
@@ -24,7 +26,8 @@ public:
     inline time_t getTimeSlice() const { return timeSlice; }
     inline bool isReady() const { return ready; }
     inline void setReady(bool ready) { this->ready = ready; }
-    inline int ping() { if(finished) return -1; pinged = true; return 0; };
+    inline int ping() { if(finished) return -1; pinged = true; return 0; }
+    void join(time_t t);
 
     static TCB* running;
     static time_t ticksRemaining;
@@ -34,29 +37,8 @@ private:
     friend class kSemaphore;
     friend class SleepingList;
     friend class kAllocator;
-    TCB(Body body, void* arg, uint8* stack_space, bool isKernelThread=false) :
-        body(body),
-        stack(stack_space),
-        arg(arg),
-        context({
-            (uint64)&wrapper,
-            (uint64)(body?&stack[DEFAULT_STACK_SIZE]:0)
-        }),
-        finished(false),
-        next(nullptr),
-        isKernelThread(isKernelThread),
-        timeSlice(DEFAULT_TIME_SLICE),
-        sleepRemaining(0),
-        ready(true),
-        blocks(0),
-        pinged(false) {
-        if(body) {
-            Scheduler::put(this);
-        }
-        if(!isKernelThread) {
-            id = numOfThreads++;
-        }
-    }
+    TCB(Body body, void* arg, uint8* stack_space, bool isKernelThread=false);
+
     struct Context {
         uint64 ra;
         uint64 sp;
@@ -74,6 +56,7 @@ private:
     uint64 id;
     uint64 blocks;
     bool pinged;
+    kSemaphore* finishedSem;
 
     static uint64 numOfThreads;
     static void contextSwitch(Context* oldRunning, Context* newRunning);
