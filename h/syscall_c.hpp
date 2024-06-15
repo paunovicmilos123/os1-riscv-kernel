@@ -43,7 +43,7 @@ void thread_dispatch();
 uint64 thread_id();
 int thread_ping(thread_t handle);
 
-int sem_open(sem_t* handle, unsigned init);
+int sem_open(sem_t* handle, unsigned init, bool priority=false);
 int sem_close (sem_t handle);
 int sem_wait (sem_t id);
 int sem_signal (sem_t id);

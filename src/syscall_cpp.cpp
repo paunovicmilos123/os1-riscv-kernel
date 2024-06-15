@@ -56,8 +56,8 @@ int Thread::ping(Thread* t) {
 }
 
 
-Semaphore::Semaphore(unsigned int init) {
-    sem_open(&myHandle, init);
+Semaphore::Semaphore(unsigned int init, bool priority) {
+    sem_open(&myHandle, init, priority);
 }
 
 Semaphore::~Semaphore() {

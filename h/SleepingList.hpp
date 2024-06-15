@@ -22,8 +22,9 @@ public:
 
     void addSleeping(time_t);
     int updateSleeping();
-    void wakeOne();
+    void wakeOne(bool priority=false);
     void wakeAll();
+    uint64 getMinPriority();
 };
 
 

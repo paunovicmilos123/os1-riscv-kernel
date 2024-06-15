@@ -41,8 +41,8 @@ int thread_ping(thread_t handle) {
     return (int) Riscv::ecall(THREAD_PING, (uint64)handle);
 }
 
-int sem_open(sem_t* handle, unsigned init) {
-    return (int) Riscv::ecall(SEM_OPEN, (uint64)handle, (uint64)init);
+int sem_open(sem_t* handle, unsigned init, bool priority) {
+    return (int) Riscv::ecall(SEM_OPEN, (uint64)handle, (uint64)init, (uint64)priority);
 }
 
 int sem_close (sem_t handle) {

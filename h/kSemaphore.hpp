@@ -16,11 +16,12 @@ enum sem_const {
  */
 class kSemaphore {
 public:
-    kSemaphore(unsigned init) :
+    kSemaphore(unsigned init, bool priority=false) :
         value((long)init),
         blocked(nullptr),
         sleepingList(),
-        open(true) {
+        open(true),
+        priority(priority) {
         next = head;
         head = this;
     }
@@ -51,6 +52,7 @@ private:
     TCB* blocked;
     SleepingList sleepingList;
     volatile bool open;
+    bool priority;
 
     kSemaphore* next;
 

@@ -57,7 +57,7 @@ void Riscv::handleSupervisorTrap(uint64 syscall_code, uint64 arg0, uint64 arg1, 
                 break;
 
             case SEM_OPEN:
-                *((kSemaphore**)arg0) = (kSemaphore*)new kSemaphore((uint)arg1);
+                *((kSemaphore**)arg0) = (kSemaphore*)new kSemaphore((uint)arg1, (bool)arg2);
                 w_a0_context((*(kSemaphore**)arg0)?0:-1);
                 break;
             case SEM_CLOSE:

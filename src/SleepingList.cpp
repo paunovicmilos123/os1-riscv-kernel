@@ -39,9 +39,30 @@ int SleepingList::updateSleeping() {
     return numberOfWoken;
 }
 
-void SleepingList::wakeOne() {
-    if(!sleeping) return;
-    TCB* woken = sleeping;
+void SleepingList::wakeOne(bool priority) {
+    if (!sleeping) return;
+    if(priority) {
+        TCB *t,*min,*prev=nullptr;
+        min = t = sleeping;
+        while(t->next) {
+            if(min->id > t->next->id) {
+                prev = t;
+                min = t->next;
+            }
+            t = t->next;
+        }
+        if(prev) {
+            prev->next = min->next;
+            if(prev->next) prev->next->sleepRemaining += min->sleepRemaining;
+        } else {
+            sleeping = min->next;
+            if(sleeping) sleeping->sleepRemaining += min->sleepRemaining;
+        }
+        min->setReady(true);
+        Scheduler::put(min);
+        return;
+    }
+    TCB *woken = sleeping;
     woken->setReady(true);
     sleeping = sleeping->next;
     if(sleeping) sleeping->sleepRemaining += woken->sleepRemaining;
@@ -52,4 +73,15 @@ void SleepingList::wakeAll() {
     while(sleeping) {
         wakeOne();
     }
+}
+
+uint64 SleepingList::getMinPriority() {
+    if(!sleeping) return ~0UL;
+    TCB* t = sleeping;
+    uint64 min = sleeping->id;
+    while(t) {
+        if(min > t->id) min = t->id;
+        t = t->next;
+    }
+    return min;
 }

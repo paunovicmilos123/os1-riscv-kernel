@@ -50,8 +50,15 @@ int kSemaphore::trywait() {
 int kSemaphore::signal() {
     if(!open) return SEM_DEAD;
     if(++value <= 0) {
-        if(!unblock())
-            sleepingList.wakeOne();
+        if(!priority) {
+            if (!unblock())
+                sleepingList.wakeOne();
+        } else {
+            uint64 minBlocked = blocked ? blocked->id : ~0UL;
+            uint64 minSleeping = sleepingList.getMinPriority();
+            if(minSleeping>=minBlocked) unblock();
+            else sleepingList.wakeOne(true);
+        }
     }
     return 0;
 }
@@ -62,17 +69,29 @@ void kSemaphore::block() {
         blocked->next = nullptr;
         return;
     }
-    TCB* last = blocked;
-    while(last->next) {
-        last = last->next;
+    if(!priority) {
+        TCB *last = blocked;
+        while (last->next) {
+            last = last->next;
+        }
+        last->next = TCB::running;
+        TCB::running->next = nullptr;
+    } else {
+        TCB *t=blocked, *prev=nullptr;
+        while(t) {
+            if(TCB::running->id < t->id) break;
+            prev = t;
+            t = t->next;
+        }
+        TCB::running->next = t;
+        if(prev) prev->next = TCB::running;
+        else blocked = TCB::running;
     }
-    last->next = TCB::running;
-    TCB::running->next = nullptr;
 }
 
 bool kSemaphore::unblock() {
-    TCB* ret = nullptr;
     if(blocked) {
+        TCB* ret = nullptr;
         ret = blocked;
         blocked = blocked->next;
         ret->next = nullptr;
