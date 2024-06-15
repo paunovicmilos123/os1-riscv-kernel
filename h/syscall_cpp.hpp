@@ -13,6 +13,7 @@ public:
 
     static void dispatch ();
     static int sleep (time_t);
+    int ping(Thread* t);
 
 protected:
     Thread ();

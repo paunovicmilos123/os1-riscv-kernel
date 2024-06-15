@@ -30,10 +30,10 @@ void Riscv::handleSupervisorTrap(uint64 syscall_code, uint64 arg0, uint64 arg1, 
         uint64 volatile sstatus = r_sstatus();
         switch (syscall_code) {
             case MEM_ALLOC:
-                w_a0_context((uint64)kAllocator::alloc(arg0 * MEM_BLOCK_SIZE));
+                w_a0_context((uint64)kAllocator::alloc(arg0 * MEM_BLOCK_SIZE, true));
                 break;
             case MEM_FREE:
-                w_a0_context(kAllocator::free((void*) arg0));
+                w_a0_context(kAllocator::free((void*) arg0, true));
                 break;
 
             case THREAD_CREATE:
@@ -51,6 +51,9 @@ void Riscv::handleSupervisorTrap(uint64 syscall_code, uint64 arg0, uint64 arg1, 
                 break;
             case THREAD_ID:
                 w_a0_context(TCB::running->id);
+                break;
+            case THREAD_PING:
+                w_a0_context(((TCB*)arg0)->ping());
                 break;
 
             case SEM_OPEN:

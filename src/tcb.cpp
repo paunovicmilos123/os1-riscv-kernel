@@ -13,6 +13,14 @@ TCB* TCB::createThread(Body body, void* arg, uint8* stack_space, bool isKernelTh
 }
 
 void TCB::dispatch(bool dispatchToKernelThread) {
+    if(running->pinged) {
+        running->pinged = false;
+        kprintString("\n>>> thread ");
+        kprintInt(running->id);
+        kprintString(" pinged: ");
+        kprintInt(running->blocks);
+        kprintString(" <<<\n");
+    }
     TCB *old = running;
     if (!old->isFinished() && old->isReady()) { Scheduler::put(old, dispatchToKernelThread); }
     running = Scheduler::get(dispatchToKernelThread);

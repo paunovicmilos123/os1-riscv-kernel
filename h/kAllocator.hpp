@@ -17,8 +17,8 @@ private:
     static FreeMem* freeMemHead;
     static void tryToJoin(FreeMem*);
 public:
-    static void* alloc(size_t);
-    static int free(void*);
+    static void* alloc(size_t s, bool syscall=false);
+    static int free(void* ptr, bool syscall=false);
 
     static void init();
 };

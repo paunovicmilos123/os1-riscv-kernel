@@ -37,6 +37,10 @@ uint64 thread_id() {
     return (uint64) Riscv::ecall(THREAD_ID);
 }
 
+int thread_ping(thread_t handle) {
+    return (int) Riscv::ecall(THREAD_PING, (uint64)handle);
+}
+
 int sem_open(sem_t* handle, unsigned init) {
     return (int) Riscv::ecall(SEM_OPEN, (uint64)handle, (uint64)init);
 }

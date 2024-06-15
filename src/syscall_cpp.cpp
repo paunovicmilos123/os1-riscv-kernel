@@ -50,6 +50,11 @@ int Thread::sleep(time_t t) {
     return time_sleep(t);
 }
 
+int Thread::ping(Thread* t) {
+    if(!t) return thread_ping(this->myHandle);
+    return thread_ping(t->myHandle);
+}
+
 
 Semaphore::Semaphore(unsigned int init) {
     sem_open(&myHandle, init);

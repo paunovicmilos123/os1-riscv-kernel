@@ -1,11 +1,14 @@
 #include "../h/kAllocator.hpp"
 
+#include "../h/tcb.hpp"
+
 FreeMem* kAllocator::freeMemHead = nullptr;
 
-void* kAllocator::alloc(size_t s) {
+void* kAllocator::alloc(size_t s, bool syscall) {
     size_t minBytes = s + sizeof(BlockHeader);
     size_t neededBlocks = (minBytes+MEM_BLOCK_SIZE-1) / MEM_BLOCK_SIZE;
     size_t neededBytes = neededBlocks * MEM_BLOCK_SIZE;
+    if(syscall && TCB::running && TCB::running->body) TCB::running->blocks += s / MEM_BLOCK_SIZE;  // ako je preko ABI, s je sigurno deljivo sa MEM_BLOCK_SIZE
 
     size_t ret = 0;
     FreeMem* t = freeMemHead;
@@ -37,10 +40,11 @@ void* kAllocator::alloc(size_t s) {
     return (void*)ret;
 }
 
-int kAllocator::free(void *ptr) {
+int kAllocator::free(void *ptr, bool syscall) {
     BlockHeader* header = (BlockHeader*)((size_t)ptr - sizeof(BlockHeader));
     size_t size = header->size;
     size_t addr = (size_t)header;
+    if(syscall && TCB::running && TCB::running->body) TCB::running->blocks -= (size-sizeof(BlockHeader)) / MEM_BLOCK_SIZE;
 
     FreeMem* cur = nullptr;
     if(freeMemHead && addr>(size_t)freeMemHead)

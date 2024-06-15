@@ -24,6 +24,7 @@ public:
     inline time_t getTimeSlice() const { return timeSlice; }
     inline bool isReady() const { return ready; }
     inline void setReady(bool ready) { this->ready = ready; }
+    inline int ping() { if(finished) return -1; pinged = true; return 0; };
 
     static TCB* running;
     static time_t ticksRemaining;
@@ -32,6 +33,7 @@ private:
     friend class Scheduler;
     friend class kSemaphore;
     friend class SleepingList;
+    friend class kAllocator;
     TCB(Body body, void* arg, uint8* stack_space, bool isKernelThread=false) :
         body(body),
         stack(stack_space),
@@ -45,7 +47,9 @@ private:
         isKernelThread(isKernelThread),
         timeSlice(DEFAULT_TIME_SLICE),
         sleepRemaining(0),
-        ready(true) {
+        ready(true),
+        blocks(0),
+        pinged(false) {
         if(body) {
             Scheduler::put(this);
         }
@@ -68,6 +72,9 @@ private:
     time_t sleepRemaining;
     bool ready;
     uint64 id;
+    uint64 blocks;
+    bool pinged;
+
     static uint64 numOfThreads;
     static void contextSwitch(Context* oldRunning, Context* newRunning);
     static void wrapper();
